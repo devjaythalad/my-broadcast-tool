@@ -23,7 +23,7 @@ export default function Home() {
 
   const urls = {
     test: 'https://lvatest.livinginsider.com/v1/notifications/broadcast_all_device',
-    prod: 'https://lvatest.livinginsider.com/v1/notifications/broadcast_all_device'
+    prod: 'https://lva.livinginsider.com/v1/notifications/broadcast_all_device'
   };
 
   const sendBroadcast = async () => {
