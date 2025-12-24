@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Copy, Send, Server, CheckCircle, AlertCircle, Radio } from 'lucide-react';
+import { useState } from 'react';
+import { Copy, Send, CheckCircle, AlertCircle, Radio, Eye, EyeOff } from 'lucide-react';
 
 interface HistoryItem {
   title: string;
@@ -16,6 +16,7 @@ export default function Home() {
   const [message, setMessage] = useState('');
   const [goRoute, setGoRoute] = useState('');
   const [apiKey, setApiKey] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
   const [environment, setEnvironment] = useState<'test' | 'prod'>('test');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -23,7 +24,7 @@ export default function Home() {
 
   const urls = {
     test: 'https://lvatest.livinginsider.com/v1/notifications/broadcast_all_device',
-    prod: 'https://lva.livinginsider.com/v1/notifications/broadcast_all_device111'
+    prod: 'https://lva.livinginsider.com/v1/notifications/broadcast_all_device'
   };
 
   const sendBroadcast = async () => {
@@ -36,8 +37,6 @@ export default function Home() {
     setResult(null);
 
     const payload = { title, message, go_route: goRoute, group: 0 };
-    const startTime = Date.now();
-
     try {
       const res = await fetch('/api/send', {
         method: 'POST',
@@ -52,10 +51,10 @@ export default function Home() {
         title,
         message,
         url: urls[environment],
-        time: new Date().toLocaleTimeString(),
+        time: new Date().toLocaleTimeString('th-TH'),
         success: data.alert?.type === 'success'
       };
-      setHistory(prev => [newItem, ...prev.slice(0, 9)]); // เก็บ 10 รายการล่าสุด
+      setHistory(prev => [newItem, ...prev.slice(0, 9)]);
     } catch (error) {
       setResult({ alert: { type: 'error', title: 'Error', description: 'ส่งไม่สำเร็จ' } });
     } finally {
@@ -65,6 +64,7 @@ export default function Home() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
+    alert('คัดลอกเรียบร้อย!');
   };
 
   return (
@@ -82,41 +82,41 @@ export default function Home() {
           {/* Main Form */}
           <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
             {/* Environment Toggle */}
-          <div className="flex items-center justify-center gap-8 mb-8 p-4 bg-gray-50 rounded-xl">
-  <label className="flex items-center gap-3 cursor-pointer">
-    <input
-      type="radio"
-      name="env"
-      checked={environment === 'test'}
-      onChange={() => setEnvironment('test')}
-      className="sr-only"
-    />
-    <Radio
-      size={20}
-      className={`transition ${environment === 'test' ? 'text-blue-600 fill-blue-600' : 'text-gray-400'}`}
-    />
-    <span className={`font-medium ${environment === 'test' ? 'text-blue-600' : 'text-gray-500'}`}>
-      Test (lvatest)
-    </span>
-  </label>
+            <div className="flex items-center justify-center gap-8 mb-8 p-4 bg-gray-50 rounded-xl">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="env"
+                  checked={environment === 'test'}
+                  onChange={() => setEnvironment('test')}
+                  className="sr-only"
+                />
+                <Radio
+                  size={20}
+                  className={`transition ${environment === 'test' ? 'text-blue-600 fill-blue-600' : 'text-gray-400'}`}
+                />
+                <span className={`font-medium ${environment === 'test' ? 'text-blue-600' : 'text-gray-500'}`}>
+                  Test (lvatest)
+                </span>
+              </label>
 
-  <label className="flex items-center gap-3 cursor-pointer">
-    <input
-      type="radio"
-      name="env"
-      checked={environment === 'prod'}
-      onChange={() => setEnvironment('prod')}
-      className="sr-only"
-    />
-    <Radio
-      size={20}
-      className={`transition ${environment === 'prod' ? 'text-red-600 fill-red-600' : 'text-gray-400'}`}
-    />
-    <span className={`font-medium ${environment === 'prod' ? 'text-red-600' : 'text-gray-500'}`}>
-      Prod (lva)
-    </span>
-  </label>
-</div>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="env"
+                  checked={environment === 'prod'}
+                  onChange={() => setEnvironment('prod')}
+                  className="sr-only"
+                />
+                <Radio
+                  size={20}
+                  className={`transition ${environment === 'prod' ? 'text-red-600 fill-red-600' : 'text-gray-400'}`}
+                />
+                <span className={`font-medium ${environment === 'prod' ? 'text-red-600' : 'text-gray-500'}`}>
+                  Prod (lva)
+                </span>
+              </label>
+            </div>
 
             {/* API Key */}
             <div className="mb-6">
@@ -125,59 +125,71 @@ export default function Home() {
               </label>
               <div className="relative">
                 <input
-                  type="password"
+                  type={showApiKey ? "text" : "password"}
                   placeholder="ใส่ API Key ของคุณ"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
-                  className="w-full p-4 pr-12 border-2 border-gray-300 rounded-xl focus:border-indigo-500 focus:outline-none transition text-lg"
+                  className="w-full p-4 pr-24 border-2 border-gray-300 rounded-xl focus:border-indigo-500 focus:outline-none transition text-lg text-gray-900 placeholder:text-gray-400"
                 />
+
+                {/* Copy Button */}
                 {apiKey && (
                   <button
                     onClick={() => copyToClipboard(apiKey)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600"
+                    className="absolute right-14 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600"
+                    title="คัดลอก"
                   >
                     <Copy size={20} />
                   </button>
                 )}
+
+                {/* Show/Hide Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowApiKey(!showApiKey)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-600"
+                  title={showApiKey ? "ซ่อน" : "แสดง"}
+                >
+                  {showApiKey ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
             </div>
 
             {/* Form Fields */}
-            // แก้เฉพาะส่วนที่ต้องเปลี่ยน
-<div className="space-y-5">
-  <div>
-    <label className="block text-sm font-bold text-gray-800 mb-2">Title</label>
-    <input
-      type="text"
-      placeholder="LIVE NOW! “ซื้อบ้านตอนนี้...”"
-      value={title}
-      onChange={(e) => setTitle(e.target.value)}
-      className="w-full p-4 border-2 border-gray-300 rounded-xl focus:border-indigo-600 focus:outline-none transition text-lg text-gray-900 placeholder:text-gray-400"
-    />
-  </div>
+            <div className="space-y-5">
+              <div>
+                <label className="block text-sm font-bold text-gray-800 mb-2">Title</label>
+                <input
+                  type="text"
+                  placeholder="LIVE NOW! “ซื้อบ้านตอนนี้...”"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full p-4 border-2 border-gray-300 rounded-xl focus:border-indigo-600 focus:outline-none transition text-lg text-gray-900 placeholder:text-gray-400"
+                />
+              </div>
 
-  <div>
-    <label className="block text-sm font-bold text-gray-800 mb-2">Message</label>
-    <textarea
-      placeholder="เคล็ดลับเลือกบ้าน–คอนโด..."
-      value={message}
-      onChange={(e) => setMessage(e.target.value)}
-      rows={3}
-      className="w-full p-4 border-2 border-gray-300 rounded-xl focus:border-indigo-600 focus:outline-none transition text-lg text-gray-900 placeholder:text-gray-400 resize-none"
-    />
-  </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-800 mb-2">Message</label>
+                <textarea
+                  placeholder="เคล็ดลับเลือกบ้าน–คอนโด..."
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  rows={3}
+                  className="w-full p-4 border-2 border-gray-300 rounded-xl focus:border-indigo-600 focus:outline-none transition text-lg text-gray-900 placeholder:text-gray-400 resize-none"
+                />
+              </div>
 
-  <div>
-    <label className="block text-sm font-bold text-gray-800 mb-2">Go Route</label>
-    <input
-      type="text"
-      placeholder="home หรือ URL"
-      value={goRoute}
-      onChange={(e) => setGoRoute(e.target.value)}
-      className="w-full p-4 border-2 border-gray-300 rounded-xl focus:border-indigo-600 focus:outline-none transition text-lg text-gray-900 placeholder:text-gray-400"
-    />
-  </div>
-</div>
+              <div>
+                <label className="block text-sm font-bold text-gray-800 mb-2">Go Route</label>
+                <input
+                  type="text"
+                  placeholder="home หรือ URL"
+                  value={goRoute}
+                  onChange={(e) => setGoRoute(e.target.value)}
+                  className="w-full p-4 border-2 border-gray-300 rounded-xl focus:border-indigo-600 focus:outline-none transition text-lg text-gray-900 placeholder:text-gray-400"
+                />
+              </div>
+            </div>
 
             {/* Send Button */}
             <button
